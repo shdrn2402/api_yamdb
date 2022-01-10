@@ -11,16 +11,34 @@ class IsAuthor(permissions.BasePermission):
 
 
 class IsModerator(permissions.BasePermission):
-    
-    pass
+
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.user.role == self.ROLE_CHOICES.MODERATOR
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.user.is_authenticated
+            and request.user.role == self.ROLE_CHOICES.MODERATOR
+        )
+        
 
 
 class IsAdmin(permissions.BasePermission):
-    pass
 
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.user.role == self.ROLE_CHOICES.ADMIN
+        )
 
-class IsAdminOrReadOnly(permissions.BasePermission):
-    pass
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.user.is_authenticated
+            and request.user.role == self.ROLE_CHOICES.ADMIN 
+        )
 
 
 class IsSuperuser(permissions.BasePermission):
