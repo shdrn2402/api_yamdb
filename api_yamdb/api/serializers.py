@@ -4,7 +4,12 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    pass
+    class Meta: 
+        model = User 
+        fields = (
+            'first_name', 'last_name', 'username',
+            'bio', 'email', 'role',
+            )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
