@@ -18,7 +18,7 @@ class User(AbstractUser):
     bio = models.TextField(max_length=500, blank=True, verbose_name='Биография')
     name= models.CharField(max_length=30, null=True, verbose_name='Имя пользователя')
     last_name= models.CharField(max_length=30, null=True, verbose_name ='Фамилия')
-    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, default=ROLE_CHOICES.USER, blank=True, null=True, verbose_name='Роль')
+    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, blank=True, null=True, verbose_name='Роль')
     date_of_birth = models.DateField(null=True, verbose_name='Дата рождения')
     
     USERNAME_FIELD = 'email'
