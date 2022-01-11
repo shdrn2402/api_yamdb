@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from api.serializers import (UserSerializer, ReviewSerializer,
                              CommentSerializer, CategorySerializer,
                              GenreSerializer, TitleSerializer)
+from api.permisions import IsAuthor, IsModerator, IsAdmin
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -17,6 +18,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -25,6 +27,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(title=title, author=self.request.user)
+
+    def get_permissions(self):
+        if self.action == 'partial_update':
+            return (IsAuthor(), IsModerator(), IsAdmin(),)
+        return super().get_permissions()
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
