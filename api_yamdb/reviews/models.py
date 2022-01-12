@@ -47,6 +47,9 @@ class Review(models.Model):
         verbose_name='Дата публикации'
     )
 
+    class Meta:
+        ordering = ['-pub_date', ]
+
 
 class Comment(models.Model):
     title_id = models.ForeignKey(
@@ -59,7 +62,7 @@ class Comment(models.Model):
         Review,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='ID произведения'
+        verbose_name='ID отзыва'
     )
     text = models.TextField(
         verbose_name='Текст комментария'
@@ -74,3 +77,6 @@ class Comment(models.Model):
         auto_now_add=True,
         verbose_name='Дата публикации'
     )
+
+    class Meta:
+        ordering = ['-pub_date']
