@@ -1,7 +1,8 @@
-from django.db import models
+from datetime import datetime
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator
-from datetime import datetime
+from django.db import models
 
 
 class User(AbstractUser):
@@ -9,18 +10,38 @@ class User(AbstractUser):
     MODERATOR = 2
     ADMIN = 3
 
-    ROLE_CHOICES = ((USER, "User"), (MODERATOR, "Moderator"), (ADMIN, "Admin"))
+    ROLE_CHOICES = ((USER, "User"),
+                    (MODERATOR, "Moderator"),
+                    (ADMIN, "Admin"))
     username = models.CharField(
-        max_length=25, unique=True, blank=False, null=False, verbose_name="Псевдоним"
+        max_length=25,
+        unique=True,
+        blank=False,
+        null=False,
+        verbose_name="Псевдоним"
     )
-    email = models.EmailField(max_length=50, unique=True, verbose_name="Адрес почты")
-    bio = models.TextField(max_length=500, blank=True, verbose_name="Биография")
-    name = models.CharField(max_length=30, null=True, verbose_name="Имя пользователя")
-    last_name = models.CharField(max_length=30, null=True, verbose_name="Фамилия")
+    email = models.EmailField(
+        max_length=50,
+        unique=True,
+        verbose_name="Адрес почты")
+    bio = models.TextField(max_length=500,
+                           blank=True,
+                           verbose_name="Биография")
+    name = models.CharField(max_length=30,
+                            null=True,
+                            verbose_name="Имя пользователя")
+    last_name = models.CharField(
+        max_length=30,
+        null=True,
+        verbose_name="Фамилия")
     role = models.PositiveSmallIntegerField(
-        choices=ROLE_CHOICES, blank=True, null=True, verbose_name="Роль"
+        choices=ROLE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Роль"
     )
-    date_of_birth = models.DateField(null=True, verbose_name="Дата рождения")
+    date_of_birth = models.DateField(null=True,
+                                     verbose_name="Дата рождения")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ("username",)
@@ -43,27 +64,42 @@ class User(AbstractUser):
         return self.role == self.ROLE_CHOICES.MODERATOR
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
+
+
 class Genre(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(max_length=50, unique=True)
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(max_length=50, unique=True)
-
-
 class Title(models.Model):
-    name = models.CharField(max_length=250)
+    name = models.CharField(
+        max_length=250,
+        verbose_name="Название")
     year = models.PositiveSmallIntegerField(
-        validators=[MaxValueValidator(datetime.now().year)]
+        validators=[MaxValueValidator(datetime.now().year)],
+        verbose_name="Год выпуска"
     )
-    rating = models.PositiveSmallIntegerField(default=0)
-    description = models.TextField(blank=True)
+    rating = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Рейтинг")
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Описание")
     category = models.ForeignKey(
-        Category, on_delete=models.PROTECT, related_name="category"
+        Category,
+        on_delete=models.PROTECT,
+        related_name="category",
+        verbose_name="Категория",
     )
-    genre = models.ForeignKey(Genre, on_delete=models.PROTECT, related_name="genre")
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.PROTECT,
+        related_name="genre",
+        verbose_name="Жанр")
 
 
 class Review(models.Model):
