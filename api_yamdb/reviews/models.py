@@ -65,13 +65,19 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256, unique=True)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField(blank=True, max_length=256, unique=True)
+    slug = models.SlugField(blank=True, max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField(blank=True, max_length=50, unique=True)
+    slug = models.SlugField(blank=True, max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Title(models.Model):
@@ -79,27 +85,37 @@ class Title(models.Model):
         max_length=250,
         verbose_name="Название")
     year = models.PositiveSmallIntegerField(
-        validators=[MaxValueValidator(datetime.now().year)],
+        null=True, validators=[MaxValueValidator(datetime.now().year)],
         verbose_name="Год выпуска"
     )
     rating = models.PositiveSmallIntegerField(
         default=0,
         verbose_name="Рейтинг")
     description = models.TextField(
+        default="",
         blank=True,
         null=True,
         verbose_name="Описание")
+    genre = models.ManyToManyField(
+        Genre,
+        through='GenreTitle')
     category = models.ForeignKey(
         Category,
         on_delete=models.PROTECT,
-        related_name="category",
+        related_name="titles",
         verbose_name="Категория",
     )
-    genre = models.ForeignKey(
-        Genre,
-        on_delete=models.PROTECT,
-        related_name="genre",
-        verbose_name="Жанр")
+
+    def __str__(self):
+        return self.name
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.PROTECT)
+    title = models.ForeignKey(Title, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return f'{self.genre} {self.title}'
 
 
 class Review(models.Model):
