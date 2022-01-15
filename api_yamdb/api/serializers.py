@@ -8,26 +8,28 @@ class ConfirmationSerializer(serializers.ModelSerializer):
         fields = ('username', 'email',)
         model = User
 
+
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
 
 
 class UsersSerializer(serializers.ModelSerializer):
-    class Meta: 
-        model = User 
+    class Meta:
+        model = User
         fields = (
             'first_name', 'last_name', 'username',
             'bio', 'email', 'role',
-            )
+        )
+
 
 class UserSerializerNonRole(serializers.ModelSerializer):
     class Meta:
-        model = User 
+        model = User
         fields = (
             'first_name', 'last_name', 'username',
             'bio', 'email', 'role',
-            )
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):

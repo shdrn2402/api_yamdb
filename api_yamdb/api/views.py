@@ -1,26 +1,26 @@
-from django.core import mail
 from django.shortcuts import get_object_or_404
-from django.db import IntegrityError
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import filters, viewsets, mixins, status
-from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
+from rest_framework import viewsets, status
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import (
     AllowAny,
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly
+    IsAuthenticated
 )
 from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework.views import APIView
-from django.http import HttpResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api_yamdb.settings import EMAIL_HOST_USER
 from reviews.models import Category, Comment, Genre, Review, Title, User
-from api.serializers import UsersSerializer, ConfirmationSerializer, ConfirmationSerializer, TokenSerializer, UserSerializerNonRole
+from api.serializers import (
+    UsersSerializer, ConfirmationSerializer,
+    ConfirmationSerializer, TokenSerializer,
+    UserSerializerNonRole
+)
 from api.permisions import IsAdmin
-from api.exceptions import UserValueException, MailValueException
+from api.exceptions import UserValueException
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -51,7 +51,7 @@ def get_jwt_token(request):
         username=serializer.data.get('username')
     )
     if not user:
-        raise UserValueException("token")
+        raise UserValueException("Ошибка имени пользователя")
     confirmation_code = serializer.data.get('confirmation_code')
     if not default_token_generator.check_token(user, confirmation_code):
         return Response(
@@ -61,13 +61,13 @@ def get_jwt_token(request):
     if default_token_generator.check_token(user, confirmation_code):
         refresh = RefreshToken.for_user(user)
         return Response(
-           {'access': str(refresh.access_token)},
-           status=status.HTTP_200_OK
-       )
+            {'access': str(refresh.access_token)},
+            status=status.HTTP_200_OK
+        )
     return Response(
         {'confirmation_code': 'Неверный код подтверждения'},
         status=status.HTTP_400_BAD_REQUEST
-        )
+    )
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -80,8 +80,11 @@ class UsersViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated])
     def me(self, request):
         user = request.user
-        serializer = UserSerializerNonRole(user, data=request.data,
-                                               partial=True)
+        serializer = UserSerializerNonRole(
+            user,
+            data=request.data,
+            partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save(role=user.role)
         return Response(serializer.data)

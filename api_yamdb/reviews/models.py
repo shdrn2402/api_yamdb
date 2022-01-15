@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-from reviews.managers import CustomUserManager
 from reviews.utils import username_validation
 
 
@@ -23,12 +22,33 @@ class User(AbstractUser):
         validators=[username_validation],
         verbose_name='Псевдоним'
     )
-    email = models.EmailField(max_length=50, unique=True, verbose_name='Адрес почты')
-    bio = models.TextField(max_length=500, blank=True, verbose_name='Биография')
-    role = models.CharField(choices=ROLE_CHOICES, default=USER, max_length=15, verbose_name='Роль')
-    first_name= models.CharField(max_length=30, blank=True, verbose_name='Имя пользователя')
-    last_name= models.CharField(max_length=30, blank=True, verbose_name ='Фамилия')
-    
+    email = models.EmailField(
+        max_length=50,
+        unique=True,
+        verbose_name='Адрес почты'
+    )
+    bio = models.TextField(
+        max_length=500,
+        blank=True,
+        verbose_name='Биография'
+    )
+    role = models.CharField(
+        choices=ROLE_CHOICES,
+        default=USER,
+        max_length=15,
+        verbose_name='Роль'
+    )
+    first_name = models.CharField(
+        max_length=30,
+        blank=True,
+        verbose_name='Имя пользователя'
+    )
+    last_name = models.CharField(
+        max_length=30,
+        blank=True,
+        verbose_name='Фамилия'
+    )
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username',)
 

@@ -6,7 +6,7 @@ class IsAuthor(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (
-            obj.author == request.user # нужно прописать поле author в моделях
+            obj.author == request.user
             or request.method in permissions.SAFE_METHODS
         )
 
@@ -24,7 +24,7 @@ class IsModerator(permissions.BasePermission):
             request.user.is_authenticated
             and request.user.role == User.MODERATOR
         )
-        
+
 
 class IsAdmin(permissions.BasePermission):
 
@@ -38,10 +38,6 @@ class IsAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return (
             request.user.is_authenticated
-            and request.user.role == User.ADMIN 
+            and request.user.role == User.ADMIN
             or request.user.is_superuser
         )
-
-
-class IsSuperuser(permissions.BasePermission):
-    pass

@@ -1,17 +1,13 @@
-from logging import error
-
-
 class APIErrors(Exception):
     """базовый класс для всех исключений."""
     pass
 
 
 class UserValueException(APIErrors):
-    """Имя пользователя не уникально или me"""
+    """Имя пользователя не существет в базе."""
     pass
- 
 
 
 class MailValueException(APIErrors):
-    """Адрес почты не уникален"""
+    """Адрес почты не уникален."""
     pass
