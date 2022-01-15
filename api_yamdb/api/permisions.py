@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from reviews.models import User
 
 
 class IsAuthor(permissions.BasePermission):
@@ -29,6 +30,6 @@ class ReviewCommentPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS
-                or request.user.role == self.ROLE_CHOICES.MODERATOR
-                or request.user.role == self.ROLE_CHOICES.ADMIN
+                or request.user.role == User.MODERATOR
+                or request.user.role == User.ADMIN
                 or obj.owner == request.user)
