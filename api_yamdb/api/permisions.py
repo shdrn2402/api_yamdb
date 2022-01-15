@@ -1,43 +1,43 @@
 from rest_framework import permissions
+from reviews.models import User
 
 
 class IsAuthor(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (
-            obj.author == request.user # нужно прописть поле author в моделях
+            obj.author == request.user # нужно прописать поле author в моделях
             or request.method in permissions.SAFE_METHODS
         )
 
 
-class IsModerator(permissions.BasePermission): # не уверен, что работает. Нужно тестить
+class IsModerator(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role == self.ROLE_CHOICES.MODERATOR
+            and request.user.role == User.MODERATOR
         )
 
     def has_object_permission(self, request, view, obj):
         return (
             request.user.is_authenticated
-            and request.user.role == self.ROLE_CHOICES.MODERATOR
+            and request.user.role == User.MODERATOR
         )
         
 
-
-class IsAdmin(permissions.BasePermission): # не уверен, что работает. Нужно тестить
+class IsAdmin(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role == self.ROLE_CHOICES.ADMIN
+            and request.user.role == User.ADMIN
         )
 
     def has_object_permission(self, request, view, obj):
         return (
             request.user.is_authenticated
-            and request.user.role == self.ROLE_CHOICES.ADMIN 
+            and request.user.role == User.ADMIN
         )
 
 
