@@ -6,7 +6,7 @@ from api.views import get_confirmation_code, get_jwt_token
 
 router_v1 = DefaultRouter()
 
-router_v1.register("users", UsersViewSet, basename='users')
+router_v1.register(r'users', UsersViewSet, basename='users')
 
 app_name = 'api'
 

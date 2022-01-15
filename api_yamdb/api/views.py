@@ -14,10 +14,11 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
 from django.http import HttpResponse
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from api_yamdb.settings import EMAIL_HOST_USER
 from reviews.models import Category, Comment, Genre, Review, Title, User
-from api.serializers import UserSerializer, ConfirmationSerializer, ConfirmationSerializer
+from api.serializers import UsersSerializer, ConfirmationSerializer, ConfirmationSerializer, TokenSerializer, UserSerializerNonRole
 from api.permisions import IsAdmin
 from api.exceptions import UserValueException, MailValueException
 
@@ -26,16 +27,12 @@ from api.exceptions import UserValueException, MailValueException
 def get_confirmation_code(request):
     """создает пользователя и отправляет код подверждения"""
     serializer = ConfirmationSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
-        try:
-            email = serializer.data.get('email')
-            username = serializer.data.get('username')
-            user = User.objects.create(email=email, username=username)
-        except Exception:
-            if User.objects.get(username=username):
-                raise UserValueException("Пользователь с таким логином уже существует")
-            if User.objects.get(email=email):
-                raise MailValueException("Данный адрес почты уже используется")
+    serializer.is_valid(raise_exception=True)
+    email = serializer.data.get('email')
+    username = serializer.data.get('username')
+    user, created = User.objects.get_or_create(username=username, email=email)
+    if not created:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = default_token_generator.make_token(user)
     mail_subject = 'Подтверждение доступа на api_yamdb'
     message = f'Ваш код подтверждения: {confirmation_code}'
@@ -44,16 +41,50 @@ def get_confirmation_code(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def get_jwt_token(request):
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(
+        User,
+        username=serializer.data.get('username')
+    )
+    if not user:
+        raise UserValueException("token")
+    confirmation_code = serializer.data.get('confirmation_code')
+    if not default_token_generator.check_token(user, confirmation_code):
+        return Response(
+            {'Код введен неверно. Повторите попытку.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    if default_token_generator.check_token(user, confirmation_code):
+        refresh = RefreshToken.for_user(user)
+        return Response(
+           {'access': str(refresh.access_token)},
+           status=status.HTTP_200_OK
+       )
+    return Response(
+        {'confirmation_code': 'Неверный код подтверждения'},
+        status=status.HTTP_400_BAD_REQUEST
+        )
 
-    pass
 
 class UsersViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = (IsAdmin,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('=username')
+    serializer_class = UsersSerializer
+    lookup_field = 'username'
+    permission_classes = [IsAdmin]
+
+    @action(detail=False, methods=['get', 'patch'],
+            permission_classes=[IsAuthenticated])
+    def me(self, request):
+        user = request.user
+        serializer = UserSerializerNonRole(user, data=request.data,
+                                               partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(role=user.role)
+        return Response(serializer.data)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):

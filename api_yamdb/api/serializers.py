@@ -3,17 +3,26 @@ from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
-class ConfirmationSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    username = serializers.CharField(required=True)
+class ConfirmationSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('username', 'email',)
+        model = User
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UsersSerializer(serializers.ModelSerializer):
     class Meta: 
+        model = User 
+        fields = (
+            'first_name', 'last_name', 'username',
+            'bio', 'email', 'role',
+            )
+
+class UserSerializerNonRole(serializers.ModelSerializer):
+    class Meta:
         model = User 
         fields = (
             'first_name', 'last_name', 'username',

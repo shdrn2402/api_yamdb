@@ -7,7 +7,7 @@ class APIErrors(Exception):
 
 
 class UserValueException(APIErrors):
-    """Имя пользователя не уникально"""
+    """Имя пользователя не уникально или me"""
     pass
  
 
