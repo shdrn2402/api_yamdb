@@ -24,7 +24,7 @@ from api.exceptions import UserValueException
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def get_confirmation_code(request):
-    """создает пользователя и отправляет код подверждения"""
+    """API создает пользователя и отправляет код подверждения=токен"""
     serializer = ConfirmationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     email = serializer.data.get('email')
@@ -43,7 +43,7 @@ def get_confirmation_code(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def get_jwt_token(request):
-    """проверяет имя пользователя и код, а создает токен"""
+    """API проверяет имя пользователя и код, а пересоздает токен"""
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
