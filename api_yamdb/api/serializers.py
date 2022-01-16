@@ -23,15 +23,6 @@ class UsersSerializer(serializers.ModelSerializer):
         )
 
 
-class UserSerializerNonRole(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'first_name', 'last_name', 'username',
-            'bio', 'email', 'role',
-        )
-
-
 class ReviewSerializer(serializers.ModelSerializer):
     pass
 
