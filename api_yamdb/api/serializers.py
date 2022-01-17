@@ -1,5 +1,12 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from reviews.models import Category, Genre, GenreTitle, Title, User
+from reviews.models import (Category,
+                            Comment,
+                            Genre,
+                            GenreTitle,
+                            Review,
+                            Title,
+                            User)
 
 
 class ConfirmationSerializer(serializers.ModelSerializer):
@@ -23,15 +30,17 @@ class UsersSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    pass
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
 
-
-class CommentSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = ('name', 'slug')
@@ -42,6 +51,28 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
+
+    def validate(self, data):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        if self.request.method == 'POST':
+            if Review.objects.filter(
+                    title=title,
+                    author=self.request.user
+            ).exists():
+                raise serializers.ValidationError(
+                    'Можно оставить только один отзыв на произведение')
+        return data
 
 
 class TitleSerializer(serializers.ModelSerializer):

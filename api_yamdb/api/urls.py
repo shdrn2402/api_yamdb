@@ -5,15 +5,27 @@ from .views import (get_confirmation_code,
                     get_jwt_token,
                     CategoryDetail,
                     CategoryList,
+                    CommentViewSet,
                     GenreDetail,
                     GenreList,
+                    ReviewViewSet,
                     TitlesViewSet,
                     UsersViewSet)
+
 
 router_v1 = DefaultRouter()
 router_v1.register(r'titles', TitlesViewSet, basename="titles")
 router_v1.register(r'users', UsersViewSet, basename='users')
-
+router_v1.register(
+    r'titles/(?P<title_id>\d+)/reviews',
+    ReviewViewSet,
+    basename='reviews'
+)
+router_v1.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet,
+    basename='comments'
+)
 app_name = 'api'
 
 v1_auth_patterns = [
