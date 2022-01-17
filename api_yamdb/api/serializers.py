@@ -1,5 +1,5 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
 from reviews.models import (Category,
                             Comment,
                             Genre,
@@ -39,6 +39,17 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
 
+    def validate(self, data):
+        title = self.context['request'].parser_context['kwargs']['title_id']
+        if self.context['request'].method == 'POST':
+            if Review.objects.filter(
+                    title=title,
+                    author=self.context['request'].user
+            ).exists():
+                raise serializers.ValidationError(
+                    'Можно оставить только один отзыв на произведение')
+        return data
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,17 +73,6 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
-
-    def validate(self, data):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        if self.request.method == 'POST':
-            if Review.objects.filter(
-                    title=title,
-                    author=self.request.user
-            ).exists():
-                raise serializers.ValidationError(
-                    'Можно оставить только один отзыв на произведение')
-        return data
 
 
 class TitleSerializer(serializers.ModelSerializer):

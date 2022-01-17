@@ -66,4 +66,4 @@ class ReviewCommentPermission(permissions.BasePermission):
         return (request.method in permissions.SAFE_METHODS
                 or request.user.role == User.MODERATOR
                 or request.user.role == User.ADMIN
-                or obj.owner == request.user)
+                or obj.author == request.user)
