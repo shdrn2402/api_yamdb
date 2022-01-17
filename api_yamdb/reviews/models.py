@@ -7,11 +7,11 @@ class User(AbstractUser):
     pass
 
 
-class Genre(models.Model):
+class Category(models.Model):
     pass
 
 
-class Category(models.Model):
+class Genre(models.Model):
     pass
 
 

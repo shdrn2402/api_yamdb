@@ -1,19 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.exceptions import MethodNotAllowed
-from reviews.models import Category, Comment, Genre, Review, Title, User
-from api.serializers import (UserSerializer, ReviewSerializer,
-                             CommentSerializer, CategorySerializer,
-                             GenreSerializer, TitleSerializer)
+from reviews.models import Comment, Review, Title
+from api.serializers import ReviewSerializer, CommentSerializer
 from api.permisions import ReviewCommentPermission
-
-
-class UsersViewSet(viewsets.ModelViewSet):
-    pass
-
-
-class TitlesViewSet(viewsets.ModelViewSet):
-    pass
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -32,14 +22,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if self.action == 'update':
             raise MethodNotAllowed('PUT-запросы запрещены')
         return super().get_permissions()
-
-
-class CategoryViewSet(viewsets.ModelViewSet):
-    pass
-
-
-class GenreViewSet(viewsets.ModelViewSet):
-    pass
 
 
 class CommentViewSet(viewsets.ModelViewSet):

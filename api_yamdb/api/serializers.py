@@ -1,11 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from reviews.models import Category, Comment, Genre, Review, Title, User
-
-
-class UserSerializer(serializers.ModelSerializer):
-    pass
+from reviews.models import Comment, Review, Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -39,15 +35,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    pass
-
-
-class GenreSerializer(serializers.ModelSerializer):
-    pass
-
-
-class TitleSerializer(serializers.ModelSerializer):
-    pass

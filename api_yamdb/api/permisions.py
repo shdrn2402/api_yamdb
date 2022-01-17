@@ -2,26 +2,6 @@ from rest_framework import permissions
 from reviews.models import User
 
 
-class IsAuthor(permissions.BasePermission):
-    pass
-
-
-class IsModerator(permissions.BasePermission):
-    pass
-
-
-class IsAdmin(permissions.BasePermission):
-    pass
-
-
-class IsAdminOrReadOnly(permissions.BasePermission):
-    pass
-
-
-class IsSuperuser(permissions.BasePermission):
-    pass
-
-
 class ReviewCommentPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
