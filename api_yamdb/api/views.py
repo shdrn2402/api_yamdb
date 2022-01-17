@@ -17,14 +17,13 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import MethodNotAllowed, UserValueException
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (AllowAny,
                                         IsAuthenticated
                                         )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.response import Response
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
@@ -58,7 +57,7 @@ def get_jwt_token(request):
         username=serializer.data.get('username')
     )
     if not user:
-        raise UserValueException("Ошибка имени пользователя")
+        raise UserValueException('Ошибка имени пользователя')
     confirmation_code = serializer.data.get('confirmation_code')
     if not default_token_generator.check_token(user, confirmation_code):
         return Response(
@@ -98,24 +97,6 @@ class UsersViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(role=user.role, partial=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
-    permission_classes = (ReviewCommentPermission,)
-
-    def get_queryset(self):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        return title.reviews.all()
-
-    def perform_create(self, serializer):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        serializer.save(title=title, author=self.request.user)
-
-    def get_permissions(self):
-        if self.action == 'update':
-            raise MethodNotAllowed('PUT-запросы запрещены')
-        return super().get_permissions()
 
 
 class CategoryList(generics.ListCreateAPIView):

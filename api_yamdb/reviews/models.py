@@ -136,7 +136,7 @@ class Review(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name='Псевдоним'
+        verbose_name='Автор отзыва'
     )
     score = models.IntegerField(
         validators=[
@@ -180,7 +180,7 @@ class Comment(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='Псевдоним'
+        verbose_name='Автор комментария'
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
