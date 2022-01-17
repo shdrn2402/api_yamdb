@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from reviews.models import User
 
 
 class IsAuthor(permissions.BasePermission):
@@ -18,16 +19,25 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or (request.user.is_authenticated
-                and request.user.role == self.ROLE_CHOICES.ADMIN)
+                and request.user.role == User.ADMIN)
         )
 
     def has_object_permission(self, request, view, obj):
         return (
             request.method in permissions.SAFE_METHODS
             or (request.user.is_authenticated
-                and request.user.role == self.ROLE_CHOICES.ADMIN)
+                and request.user.role == User.ADMIN)
         )
 
 
-class IsSuperuser(permissions.BasePermission):
-    pass
+class ReviewCommentPermission(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.role == User.MODERATOR
+                or request.user.role == User.ADMIN
+                or obj.owner == request.user)

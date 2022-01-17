@@ -1,7 +1,5 @@
-from django.db.models.fields import SlugField
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
-from reviews.models import Category, Comment, Genre, Review, User, Title
+from reviews.models import Category, Genre, GenreTitle, Title
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,22 +18,32 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug',)
+        fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = ('name', 'slug',)
+        fields = ('name', 'slug')
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True, read_only=True)
-    category = CategorySerializer(read_only=True)
-    #rating = serializers.IntegerField(read_only=True)
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year',  # 'rating',
+        fields = ('id', 'name', 'year', 'rating',
                   'description', 'genre', 'category')
+
+    def create(self, validated_data):
+        genres = validated_data.pop('genre')
+        title = Title.objects.create(**validated_data)
+        for genre in genres:
+            current_genre, status = Genre.objects.get_or_create(
+                **genre)
+            GenreTitle.objects.create(
+                genre=current_genre, title=title)
+        return title
