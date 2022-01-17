@@ -1,11 +1,17 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from api.views import UsersViewSet
-from api.views import get_confirmation_code, get_jwt_token
+from .views import (get_confirmation_code,
+                    get_jwt_token,
+                    CategoryDetail,
+                    CategoryList,
+                    GenreDetail,
+                    GenreList,
+                    TitlesViewSet,
+                    UsersViewSet)
 
 router_v1 = DefaultRouter()
-
+router_v1.register(r'titles', TitlesViewSet, basename="titles")
 router_v1.register(r'users', UsersViewSet, basename='users')
 
 app_name = 'api'
@@ -18,4 +24,18 @@ v1_auth_patterns = [
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/auth/', include(v1_auth_patterns)),
+    path(r'v1/', include(router_v1.urls)),
+    path(r'v1/categories/',
+         CategoryList.as_view(),
+         name='category_list'),
+    path(r'v1/categories/<slug:slug>/',
+         CategoryDetail.as_view(),
+         name='category_detail'),
+    path(r'v1/genres/',
+         GenreList.as_view(),
+         name='genres_list'),
+    path(r'v1/genres/<slug:slug>/',
+         GenreDetail.as_view(),
+         name='genres_detail'),
+    path('v1/', include('djoser.urls')),
 ]
