@@ -1,7 +1,8 @@
+import datetime as dt
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-import datetime as dt
+
 
 from .utils import username_validation
 
@@ -76,19 +77,20 @@ class Title(models.Model):
         max_length=250, verbose_name='Название'
     )
     year = models.PositiveIntegerField(
-        validators=[MinValueValidator(0),
-                    MaxValueValidator(dt.date.today().year)],
+        validators=[MaxValueValidator(dt.date.today().year)],
         verbose_name='Год выпуска', db_index=True
     )
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL,
-        blank=True, null=True,
+        null=True,
         related_name='titles',
         verbose_name='Категория'
     )
     description = models.TextField(default='', verbose_name='Описание')
     genre = models.ManyToManyField(
-         Genre, default=None, blank=True
+        Genre,
+        default=None,
+        null=True
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
