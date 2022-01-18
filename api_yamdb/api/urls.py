@@ -36,7 +36,6 @@ v1_auth_patterns = [
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/auth/', include(v1_auth_patterns)),
-    path(r'v1/', include(router_v1.urls)),
     path(r'v1/categories/',
          CategoryList.as_view(),
          name='category_list'),

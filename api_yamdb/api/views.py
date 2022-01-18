@@ -13,7 +13,7 @@ from api_yamdb.settings import EMAIL_HOST_USER
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
@@ -132,20 +132,34 @@ class GenreDetail(generics.DestroyAPIView):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly, )
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category', 'genre', 'name', 'year')
-
+    
     def perform_create(self, serializer):
-        category = get_object_or_404(
-            Category, slug__in=serializer.validated_data['category'].values())
-        serializer.save(
-            # name=serializer.validated_data.get('name'),
-            # year=serializer.validated_data.get('year'),
-            # genre=serializer.validated_data.get('genre'),
-            # description=serializer.validated_data.get('description'),
-            category=category
-        )
+        slug_genre = self.request.data.get('genre')
+        if isinstance(slug_genre, str):
+            slug_genre = self.request.data.getlist('genre')
+        slug_category = self.request.data.get('category')
+        genre = Genre.objects.filter(slug__in=slug_genre)
+        category = get_object_or_404(Category, slug=slug_category)
+        serializer.save(genre=genre, category=category)
+
+    def perform_update(self, serializer):
+        slug_genre = self.request.data.get('genre')
+        slug_category = self.request.data.get('category')
+        if slug_genre and slug_category:
+            genre = Genre.objects.filter(slug__in=slug_genre)
+            category = get_object_or_404(Category, slug=slug_category)
+            serializer.save(genre=genre, category=category)
+        elif slug_genre:
+            genre = get_list_or_404(Genre, slug__in=slug_genre)
+            serializer.save(genre=genre)
+        elif slug_category:
+            category = get_object_or_404(Category, slug=slug_category)
+            serializer.save(category=category)
+        else:
+            serializer.save()
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

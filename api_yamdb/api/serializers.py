@@ -75,22 +75,21 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'pub_date')
 
 
+class RoundingDecimalField(serializers.DecimalField):
+    def validate_precision(self, value):
+        return value
+
+
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True)
-    category = CategorySerializer()
-    rating = serializers.IntegerField(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True, many=False)
+    rating = RoundingDecimalField(
+        max_digits=21, decimal_places=2, coerce_to_string=False, default=0,
+        read_only=True
+    )
 
     class Meta:
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
         model = Title
-        fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genre', 'category')
-
-    def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre, status = Genre.objects.get_or_create(
-                **genre)
-            GenreTitle.objects.create(
-                genre=current_genre, title=title)
-        return title

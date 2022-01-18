@@ -1,8 +1,7 @@
-from datetime import datetime
-
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+import datetime as dt
 
 from .utils import username_validation
 
@@ -74,41 +73,27 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(
-        max_length=250,
-        verbose_name='Название')
-    year = models.PositiveSmallIntegerField(
-        validators=[MaxValueValidator(datetime.now().year)],
-        verbose_name='Год выпуска'
+        max_length=250, verbose_name='Название'
     )
-    description = models.TextField(
-        default='',
-        blank=True,
-        null=True,
-        verbose_name='Описание')
-    genre = models.ManyToManyField(
-        Genre,
-        through='GenreTitle')
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(0),
+                    MaxValueValidator(dt.date.today().year)],
+        verbose_name='Год выпуска', db_index=True
+    )
     category = models.ForeignKey(
-        Category,
-        null=True,
-        on_delete=models.SET_NULL,
+        Category, on_delete=models.SET_NULL,
+        blank=True, null=True,
         related_name='titles',
-        verbose_name='Категория',
+        verbose_name='Категория'
     )
-    # Не уверен в необходимости этих полей
+    description = models.TextField(default='', verbose_name='Описание')
+    genre = models.ManyToManyField(
+         Genre, default=None, blank=True
+    )
     pub_date = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата публикации'
     )
-
-    class Meta:
-        ordering = ['-pub_date', ]
-        constraints = [
-            models.UniqueConstraint(
-                fields=['name', 'year', 'category'],
-                name='unique_title'
-            )
-        ]
 
     def __str__(self):
         return self.name
