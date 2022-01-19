@@ -78,6 +78,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         many=True,
+        required=True,
         slug_field='slug',
         queryset=Genre.objects.all())
     category = serializers.SlugRelatedField(
@@ -93,7 +94,7 @@ class TitleSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         category_object = get_object_or_404(Category, slug=ret['category'])
-        ganres_queryset = get_list_or_404(Genre, slug__in=ret['genre'])
+        ganres_queryset = Genre.objects.filter(slug__in=ret['genre'])
         ret['category'] = CategorySerializer(category_object).data
         ret['genre'] = [GenreSerializer(
             genre_object).data for genre_object in ganres_queryset]

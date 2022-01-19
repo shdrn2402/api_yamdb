@@ -1,3 +1,4 @@
+import django_filters
 from api.exceptions import UserValueException
 from api.permisions import IsAdmin, IsAdminOrReadOnly, ReviewCommentPermission
 from api.serializers import (CategorySerializer,
@@ -24,7 +25,13 @@ from rest_framework.permissions import (AllowAny,
                                         )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import (Category,
+                            Comment,
+                            Genre,
+                            Review,
+                            Title,
+                            User
+                            )
 
 
 @api_view(['POST'])
@@ -129,12 +136,23 @@ class GenreDetail(generics.DestroyAPIView):
     lookup_field = 'slug'
 
 
+# class ModelFilter(django_filters.FilterSet):
+#     category = django_filters.ModelChoiceFilter(
+#         field_name="category__slug",
+#         queryset=Category.objects.all())
+
+#     class Meta:
+#         model = Title
+#         fields = ('category',)
+
+
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category', 'genre', 'name', 'year')
+    # filter_class = ModelFilter
+    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

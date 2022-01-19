@@ -25,4 +25,7 @@ urlpatterns = [
         name='redoc'
     ),
     path('api/', include('api.urls', namespace='api')),
+    path('auth/', include('djoser.urls')),
+
+    path('auth/', include('djoser.urls.jwt')),
 ]
