@@ -136,22 +136,11 @@ class GenreDetail(generics.DestroyAPIView):
     lookup_field = 'slug'
 
 
-# class ModelFilter(django_filters.FilterSet):
-#     category = django_filters.ModelChoiceFilter(
-#         field_name="category__slug",
-#         queryset=Category.objects.all())
-
-#     class Meta:
-#         model = Title
-#         fields = ('category',)
-
-
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    # filter_class = ModelFilter
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
 
