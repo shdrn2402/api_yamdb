@@ -92,8 +92,8 @@ class Title(models.Model):
         Category,
         null=True,
         on_delete=models.SET_NULL,
-        related_name='titles',
-        verbose_name='Категория',
+        # related_name='titles',
+        # verbose_name='Категория',
     )
     # Не уверен в необходимости этих полей
     pub_date = models.DateTimeField(

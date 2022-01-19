@@ -136,16 +136,16 @@ class TitlesViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category', 'genre', 'name', 'year')
 
-    def perform_create(self, serializer):
-        category = get_object_or_404(
-            Category, slug__in=serializer.validated_data['category'].values())
-        serializer.save(
-            # name=serializer.validated_data.get('name'),
-            # year=serializer.validated_data.get('year'),
-            # genre=serializer.validated_data.get('genre'),
-            # description=serializer.validated_data.get('description'),
-            category=category
-        )
+    # def perform_create(self, serializer):
+    #     category = get_object_or_404(
+    #         Category, slug__in=serializer.validated_data['category'].values())
+    #     serializer.save(
+    #         # name=serializer.validated_data.get('name'),
+    #         # year=serializer.validated_data.get('year'),
+    #         # genre=serializer.validated_data.get('genre'),
+    #         # description=serializer.validated_data.get('description'),
+    #         category=category
+    #     )
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
