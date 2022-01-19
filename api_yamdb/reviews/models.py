@@ -91,18 +91,9 @@ class Title(models.Model):
     category = models.ForeignKey(
         Category,
         null=True,
-        on_delete=models.SET_NULL,
-        # related_name='titles',
-        # verbose_name='Категория',
-    )
-    # Не уверен в необходимости этих полей
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата публикации'
-    )
+        on_delete=models.SET_NULL)
 
     class Meta:
-        ordering = ['-pub_date', ]
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'year', 'category'],
