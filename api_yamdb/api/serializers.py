@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from reviews.models import (Category,
@@ -52,6 +53,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Category
         fields = ('name', 'slug')
@@ -81,15 +83,27 @@ class RoundingDecimalField(serializers.DecimalField):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True, read_only=True)
-    category = CategorySerializer(read_only=True, many=False)
-    rating = RoundingDecimalField(
-        max_digits=21, decimal_places=2, coerce_to_string=False, default=0,
-        read_only=True
-    )
+    genre = serializers.SlugRelatedField(
+        many=True,
+        required=True,
+        slug_field='slug',
+        queryset=Genre.objects.all())
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all())
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         model = Title
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        category_object = get_object_or_404(Category, slug=ret['category'])
+        ganres_queryset = Genre.objects.filter(slug__in=ret['genre'])
+        ret['category'] = CategorySerializer(category_object).data
+        ret['genre'] = [GenreSerializer(
+            genre_object).data for genre_object in ganres_queryset]
+        return ret

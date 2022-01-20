@@ -61,7 +61,7 @@ class Category(models.Model):
     slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class Genre(models.Model):
@@ -69,7 +69,7 @@ class Genre(models.Model):
     slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class Title(models.Model):
@@ -96,6 +96,14 @@ class Title(models.Model):
         auto_now_add=True,
         verbose_name='Дата публикации'
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'year', 'category'],
+                name='unique_title'
+            )
+        ]
 
     def __str__(self):
         return self.name
