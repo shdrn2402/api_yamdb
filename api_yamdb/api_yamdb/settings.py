@@ -43,13 +43,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-}
+
 ROOT_URLCONF = 'api_yamdb.urls'
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
@@ -99,11 +93,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SIMPLE_JWT = {
-    # Устанавливаем срок жизни токена
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
-    'AUTH_HEADER_TYPES': ('Bearer',),
-}
 # Internationalization
 
 LANGUAGE_CODE = 'en-us'
