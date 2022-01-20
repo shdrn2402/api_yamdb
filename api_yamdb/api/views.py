@@ -1,4 +1,3 @@
-import django_filters
 from api.exceptions import UserValueException
 from api.permisions import IsAdmin, IsAdminOrReadOnly, ReviewCommentPermission
 from api.serializers import (CategorySerializer,
@@ -14,6 +13,7 @@ from api_yamdb.settings import EMAIL_HOST_USER
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
@@ -137,11 +137,33 @@ class GenreDetail(generics.DestroyAPIView):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
+
+    def get_queryset(self):
+        queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
+        category = self.request.query_params.get('category')
+        genre = self.request.query_params.get('genre')
+        name = self.request.query_params.get('name')
+        year = self.request.query_params.get('year')
+
+        if category:
+            queryset = queryset.filter(
+                category__slug=category
+            ).annotate(rating=Avg('reviews__score'))
+        elif genre:
+            queryset = queryset.filter(
+                genre__slug__contains=genre
+            ).annotate(rating=Avg('reviews__score'))
+        elif name:
+            queryset = queryset.filter(
+                name__contains=name
+            ).annotate(rating=Avg('reviews__score'))
+        elif year:
+            queryset = queryset.filter(
+                year=year
+            ).annotate(rating=Avg('reviews__score'))
+        return queryset
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

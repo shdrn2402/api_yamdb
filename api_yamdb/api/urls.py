@@ -10,7 +10,8 @@ from .views import (get_confirmation_code,
                     GenreList,
                     ReviewViewSet,
                     TitlesViewSet,
-                    UsersViewSet)
+                    UsersViewSet,
+                    )
 
 
 router_v1 = DefaultRouter()
