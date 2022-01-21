@@ -8,6 +8,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django_filters import CharFilter, FilterSet, NumberFilter
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import MethodNotAllowed
@@ -122,34 +123,24 @@ class GenreDetail(generics.DestroyAPIView):
     lookup_field = 'slug'
 
 
+class TitleFilter(FilterSet):
+    year = NumberFilter(field_name="year")
+    name = CharFilter(field_name="name", lookup_expr='icontains')
+    category = CharFilter(
+        field_name="category__slug", lookup_expr='icontains')
+    genre = CharFilter(
+        field_name="genre__slug", lookup_expr='icontains')
+
+    class Meta:
+        model = Title
+        fields = ['name', 'year', 'category', 'genre']
+
+
 class TitlesViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
-
-    def get_queryset(self):
-        queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
-        category = self.request.query_params.get('category')
-        genre = self.request.query_params.get('genre')
-        name = self.request.query_params.get('name')
-        year = self.request.query_params.get('year')
-
-        if category:
-            queryset = queryset.filter(
-                category__slug=category
-            ).annotate(rating=Avg('reviews__score'))
-        elif genre:
-            queryset = queryset.filter(
-                genre__slug__contains=genre
-            ).annotate(rating=Avg('reviews__score'))
-        elif name:
-            queryset = queryset.filter(
-                name__contains=name
-            ).annotate(rating=Avg('reviews__score'))
-        elif year:
-            queryset = queryset.filter(
-                year=year
-            ).annotate(rating=Avg('reviews__score'))
-        return queryset
+    filterset_class = TitleFilter
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
