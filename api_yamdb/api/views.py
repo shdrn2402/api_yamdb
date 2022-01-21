@@ -1,24 +1,24 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated
-)
-from rest_framework.response import Response
-from django.core.mail import send_mail
+from api.exceptions import UserValueException
+from api.permisions import IsAdmin, IsAdminOrReadOnly, ReviewCommentPermission
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             ConfirmationSerializer, GenreSerializer,
+                             ReviewSerializer, TitleSerializer,
+                             TokenSerializer, UsersSerializer)
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.mail import send_mail
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from django_filters import CharFilter, FilterSet, NumberFilter
+from rest_framework import filters, generics, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
 from api_yamdb.settings import EMAIL_HOST_USER
-from reviews.models import Category, Comment, Genre, Review, Title, User
-from api.serializers import (
-    UsersSerializer, ConfirmationSerializer,
-    TokenSerializer
-)
-from api.permisions import IsAdmin
-from api.exceptions import UserValueException
 
 
 @api_view(['POST'])
@@ -51,7 +51,7 @@ def get_jwt_token(request):
         username=serializer.data.get('username')
     )
     if not user:
-        raise UserValueException("Ошибка имени пользователя")
+        raise UserValueException('Ошибка имени пользователя')
     confirmation_code = serializer.data.get('confirmation_code')
     if not default_token_generator.check_token(user, confirmation_code):
         return Response(
@@ -83,21 +83,87 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class CategoryList(generics.ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
+class CategoryDetail(generics.DestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'slug'
+
+
+class GenreList(generics.ListCreateAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
+class GenreDetail(generics.DestroyAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'slug'
+
+
+class TitleFilter(FilterSet):
+    year = NumberFilter(field_name="year")
+    name = CharFilter(field_name="name", lookup_expr='icontains')
+    category = CharFilter(
+        field_name="category__slug", lookup_expr='icontains')
+    genre = CharFilter(
+        field_name="genre__slug", lookup_expr='icontains')
+
+    class Meta:
+        model = Title
+        fields = ['name', 'year', 'category', 'genre']
+
+
 class TitlesViewSet(viewsets.ModelViewSet):
-    pass
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
+    serializer_class = TitleSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filterset_class = TitleFilter
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    pass
+    serializer_class = ReviewSerializer
+    permission_classes = (ReviewCommentPermission,)
 
+    def get_queryset(self):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        return title.reviews.all()
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    pass
+    def perform_create(self, serializer):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        serializer.save(title=title, author=self.request.user)
 
-
-class GenreViewSet(viewsets.ModelViewSet):
-    pass
+    def get_permissions(self):
+        if self.action == 'update':
+            raise MethodNotAllowed('PUT-запросы запрещены')
+        return super().get_permissions()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    pass
+    serializer_class = CommentSerializer
+    permission_classes = (ReviewCommentPermission,)
+
+    def get_queryset(self):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        comments = Comment.objects.filter(title=title, review=review)
+        return comments
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        serializer.save(
+            title=title, review=review, author=self.request.user
+        )
