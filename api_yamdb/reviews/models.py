@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from .utils import username_validation
+validators import username_validation
 
 
 class User(AbstractUser):
@@ -54,6 +54,14 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username',)
+
+    @property
+    def is_admin(self):
+        return self.is_staff or self.role == User.ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role == User.MODERATOR
 
 
 class Category(models.Model):
