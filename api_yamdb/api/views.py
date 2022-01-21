@@ -58,16 +58,6 @@ def get_jwt_token(request):
             {'Код введен неверно. Повторите попытку.'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    if default_token_generator.check_token(user, confirmation_code):
-        refresh = RefreshToken.for_user(user)
-        return Response(
-            {'access': str(refresh.access_token)},
-            status=status.HTTP_200_OK
-        )
-    return Response(
-        {'confirmation_code': 'Неверный код подтверждения'},
-        status=status.HTTP_400_BAD_REQUEST
-    )
 
 
 class UsersViewSet(viewsets.ModelViewSet):
