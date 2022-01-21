@@ -62,7 +62,7 @@ def get_jwt_token(request):
     return Response(
         {'access': str(refresh.access_token)},
         status=status.HTTP_200_OK
-        )
+    )
 
 
 class UsersViewSet(viewsets.ModelViewSet):
