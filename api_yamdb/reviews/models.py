@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-validators import username_validation
+from .validators import username_validation
 
 
 class User(AbstractUser):
